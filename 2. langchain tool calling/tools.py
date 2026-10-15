@@ -1,11 +1,13 @@
 from langchain_core.tools import tool
 
+
 weight_units = {
-    "g" : 1, 
-    "kg" : 1000,
-    "pound" : 453.59,
-    "ounce" : 28.35
+    "g": 1, "gram": 1, "grams": 1,
+    "kg": 1000, "kilogram": 1000, "kilograms": 1000,
+    "pound": 453.59, "pounds": 453.59, "lb": 453.59, "lbs": 453.59,
+    "ounce": 28.35, "ounces": 28.35, "oz": 28.35
 }
+
 
 @tool
 def weight_converter(value: float, from_unit : str, to_unit: str) -> float:

@@ -1,4 +1,5 @@
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+# from langchain.agents import create_tool_calling_agent, AgentExecutor #..maintenance till December, 2026
+from langchain_classic.agents import create_tool_calling_agent, AgentExecutor 
 from langchain.chat_models import init_chat_model
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder 
@@ -14,9 +15,11 @@ import os
 load_dotenv()
 
 model = init_chat_model(
-    "gemini-3.6-flash-lite",
-    api_key = os.getenv("GEMINI_API_KEY")
+    "gemini-3.1-flash-lite",
+    model_provider="google_genai",
+    google_api_key=os.getenv("GEMINI_API_KEY")
 )
+
 
 # >>tools.py
 
@@ -33,10 +36,10 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 class shopping(BaseModel):
-    Price: float = Field(description=" Price of the items that the customer want to buy")
-    Tax: float = Field(description=" Tax amount on the item")
-    Total_cost: float = Field(description=" total Cost of the items including tax")
-    Budget: float = Field(description="The customer's budget")
+    Price: float | None = Field(None, description=" Price of the items that the customer want to buy")
+    Tax: float | None = Field(None, description=" Tax amount on the item")
+    Total_cost: float | None = Field(None, description=" total Cost of the items including tax")
+    Budget: float | None = Field(None, description="The customer's budget")
     steps: list = Field(description="Raw tool observations")
 
 structured_model = model.with_structured_output(shopping)
@@ -68,10 +71,15 @@ while True:
 
         Tool observations: {steps}
 
-        Extract the available price, tax, total cost, and budget.
-        Put the tool observations into the steps field.
-        Do not invent missing values.
+        Rules:
+        - Use only values supported by the request or tool observations.
+        - Use null for missing or inapplicable numeric values.
+        - Never invent a budget, price, tax, or total.
+        - Copy the tool observations into the steps field.
+        - Treat tool observations as the source of truth for calculations.
         """
     )
 
     print(result)
+
+
