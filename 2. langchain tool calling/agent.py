@@ -21,8 +21,7 @@ model = init_chat_model(
 )
 
 
-# >>tools.py
-
+# >>tools.py   
 
 tool_list = [currency_converter, weight_converter, budget_calculator]
 
@@ -36,25 +35,39 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 class shopping(BaseModel):
-    Price: float | None = Field(None, description=" Price of the items that the customer want to buy")
-    Tax: float | None = Field(None, description=" Tax amount on the item")
-    Total_cost: float | None = Field(None, description=" total Cost of the items including tax")
-    Budget: float | None = Field(None, description="The customer's budget")
-    steps: list = Field(description="Raw tool observations")
+    Price: float | None = Field(None, description="Price of the items before tax, in INR")
+    Tax: float | None = Field(None, description="Tax amount, in INR")
+    Total_cost: float | None = Field(None, description="Total cost including tax, in INR")
+    Budget: float | None = Field(None, description="The customer's budget, in INR")
+    within_budget: bool | None = Field(None, description="True if total is within budget, False if over, null if no budget was given")
 
 structured_model = model.with_structured_output(shopping)
 
 agent = create_tool_calling_agent(model, tool_list, prompt)
-agent_executor = AgentExecutor(agent= agent, tools= tool_list, return_intermediate_steps= True, verbose=True,)
+agent_executor = AgentExecutor(agent=agent, tools=tool_list, return_intermediate_steps=True, verbose=False)
 
-# AgentExecutor keeps a record of intermediate_steps
+
 def _steps(intermediate_steps) -> list[str]:
-    ''' Return the observation of the steps, exactly as the stool produce it'''
-    return [observation for _action, observation in intermediate_steps]
+    """Readable steps: which tool ran, with what inputs, and what it returned."""
+    lines = []
+    for i, (action, observation) in enumerate(intermediate_steps, 1):
+        args = ", ".join(f"{k}={v}" for k, v in action.tool_input.items())
+        if isinstance(observation, float):
+            obs = f"{observation:,.2f}"
+        else:
+            obs = str(observation).replace("\n", " | ")
+        lines.append(f"{i}. {action.tool}({args}) -> {obs}")
+    return lines
+
+
+def _inr(x):
+    return f"₹{x:,.2f}" if x is not None else "n/a"
+
 
 while True:
     user_input = input("Ask? ")
     if user_input.strip().lower() == "exit":
+        print("Cya! Have a good Day 😌")
         break
 
     response = agent_executor.invoke({"input": user_input})
@@ -69,17 +82,76 @@ while True:
 
         Agent's final answer: {response["output"]}
 
-        Tool observations: {steps}
+        Tool observations:
+        {chr(10).join(steps)}
 
         Rules:
         - Use only values supported by the request or tool observations.
-        - Use null for missing or inapplicable numeric values.
+        - Use null for missing or inapplicable values.
         - Never invent a budget, price, tax, or total.
-        - Copy the tool observations into the steps field.
         - Treat tool observations as the source of truth for calculations.
         """
     )
 
-    print(result)
+    # Human-readable output
+    print("\nSteps:")
+    for s in steps:
+        print("  " + s)
 
+    verdict = {True: "Yes", False: "No", None: "n/a"}[result.within_budget]
+    print(f"\nTotal: {_inr(result.Total_cost)} | Budget: {_inr(result.Budget)} | Within budget: {verdict}\n")
+
+    # Machine-readable output (steps attached by code, not by the LLM)
+    data = result.model_dump()
+    data["steps"] = steps
+    # print(data)
+
+# me
+# class shopping(BaseModel):
+#     Price: float | None = Field(None, description=" Price of the items that the customer want to buy")
+#     Tax: float | None = Field(None, description=" Tax amount on the item")
+#     Total_cost: float | None = Field(None, description=" total Cost of the items including tax")
+#     Budget: float | None = Field(None, description="The customer's budget")
+#     steps: list = Field(description="Raw tool observations")
+
+# structured_model = model.with_structured_output(shopping)
+
+# agent = create_tool_calling_agent(model, tool_list, prompt)
+# agent_executor = AgentExecutor(agent= agent, tools= tool_list, return_intermediate_steps= True, verbose=False)
+
+# # AgentExecutor keeps a record of intermediate_steps
+# def _steps(intermediate_steps) -> list[str]:
+#     ''' Return the observation of the steps, exactly as the stool produce it'''
+#     return [observation for _action, observation in intermediate_steps]
+
+# while True:
+#     user_input = input("Ask? ")
+#     if user_input.strip().lower() == "exit":
+#         print("Cya! Have a good Day 😌")
+#         break
+
+#     response = agent_executor.invoke({"input": user_input})
+#     steps = _steps(response.get("intermediate_steps", []))
+
+#     result = structured_model.invoke(
+#         f"""
+#         Convert the following shopping assistant result into the
+#         required structured output schema.
+
+#         User request: {user_input}
+
+#         Agent's final answer: {response["output"]}
+
+#         Tool observations: {steps}
+
+#         Rules:
+#         - Use only values supported by the request or tool observations.
+#         - Use null for missing or inapplicable numeric values.
+#         - Never invent a budget, price, tax, or total.
+#         - Copy the tool observations into the steps field.
+#         - Treat tool observations as the source of truth for calculations.
+#         """
+#     )
+
+#     print(result.model_dump())
 

@@ -9,9 +9,6 @@ You're prototyping a backend helper for an internal ops tool. Someone types a me
 
 The system needs to figure out, on its own, which conversions and calculations are needed and in what order, call the right tools in sequence (using earlier results as inputs to later tools), and hand back a clean, validated final answer — not a wall of raw text.
 
-**Your role:**
-Backend engineer building the orchestration layer for this request-processing agent.
-
 **Goal:**
 Build a small LangChain agent that resolves a shopping/budget request requiring **multiple sequential tool calls**, where later tool calls depend on earlier tool outputs, and returns a **structured (Pydantic-validated) final answer**.
 

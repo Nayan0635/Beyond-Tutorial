@@ -51,7 +51,7 @@ def currency_converter(value: float, from_currency : str, to_currency: str) -> f
 
 @tool
 def budget_calculator(price: float, tax_rate: float, budget: float):
-    '''to calculate tax/budget'''
+    '''Calculate tax and check a budget. tax_rate is a PERCENTAGE, e.g. pass 8 for 8% (not 0.08).'''
     
     tax = (price * tax_rate)/100
     cost = price + tax
@@ -71,12 +71,11 @@ def budget_calculator(price: float, tax_rate: float, budget: float):
         f"total_cost_inr: ₹{c:,.2f}",
     ]
     
-    if report["remaining"]:
+    if cost <= budget:
         lines.append(f"✅ Fits! You'll have ₹{report['remaining']:,.2f} left.")
     else:
         lines.append(f"❌ Over budget by ₹{report['over by']:,.2f}.")
     
     result = "\n".join(lines)
-    print(result)
     return result
     
