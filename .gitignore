@@ -3,9 +3,22 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
+**.vscode/
 # Environment variables & secrets
 .env
 .env.*
 
+# Media and document files
+documents/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.csv
+*.xlsx
+*.docx
+
 test.py
+**database/
+**chromaDB/
+**faissDB/
