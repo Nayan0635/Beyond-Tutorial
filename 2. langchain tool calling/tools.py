@@ -66,15 +66,15 @@ def budget_calculator(price: float, tax_rate: float, budget: float):
     p, t, c = report["price"], report["tax"], report["total"]
     
     lines = [
-        f"Price: ₹{p:,.2f}",
-        f"Tax ({tax_rate}%): ₹{t:,.2f}",
-        f"total_cost_inr: ₹{c:,.2f}",
+        f"Price: {p:,.2f}",
+        f"Tax ({tax_rate}%): {t:,.2f}",
+        f"total_cost: {c:,.2f}",
     ]
     
     if cost <= budget:
-        lines.append(f"✅ Fits! You'll have ₹{report['remaining']:,.2f} left.")
+        lines.append(f"✅ Fits! You'll have {report['remaining']:,.2f} left.")
     else:
-        lines.append(f"❌ Over budget by ₹{report['over by']:,.2f}.")
+        lines.append(f"❌ Over budget by {report['over by']:,.2f}.")
     
     result = "\n".join(lines)
     return result

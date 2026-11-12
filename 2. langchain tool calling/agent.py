@@ -17,7 +17,7 @@ load_dotenv()
 model = init_chat_model(
     "gemini-3.1-flash-lite",
     model_provider="google_genai",
-    google_api_key=os.getenv("GEMINI_API_KEY")
+    api_key=os.getenv("GEMINI_API_KEY")
 )
 
 
