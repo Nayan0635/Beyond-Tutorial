@@ -90,7 +90,7 @@ To become an engineer who can do more than follow instructions or reproduce tuto
 
 I want to develop the confidence to approach unfamiliar problems, research what I need, make informed technical decisions, and build working solutions.
 
-**Learn → Build → Struggle → Debug → Understand → Apply → Repeat**
+**Learn → Build → Struggle → Debug → Understand → Apply → Repeat** 
 
 One real-world problem at a time. 🚀
 
